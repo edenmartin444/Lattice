@@ -35,7 +35,7 @@ const navItems = [
     label: "Graph",
     href: "/graph",
     icon: Network,
-    enabled: false,
+    enabled: true,
   },
   {
     label: "Explore",
