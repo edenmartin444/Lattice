@@ -41,7 +41,7 @@ const navItems = [
     label: "Explore",
     href: "/explore",
     icon: Sparkles,
-    enabled: false,
+    enabled: true,
   },
   {
     label: "Import",
