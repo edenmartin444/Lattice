@@ -47,7 +47,7 @@ const navItems = [
     label: "Import",
     href: "/import",
     icon: Upload,
-    enabled: false,
+    enabled: true,
   },
 ]
 
