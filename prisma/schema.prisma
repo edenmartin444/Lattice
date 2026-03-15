@@ -1,0 +1,140 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [pgvector(map: "vector")]
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String?
+  image         String?
+  createdAt     DateTime  @default(now())
+
+  concepts    Concept[]
+  connections Connection[]
+  imports     Import[]
+  settings    UserSettings?
+
+  // Required by Auth.js
+  accounts    Account[]
+  sessions    Session[]
+}
+
+// Auth.js required models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model UserSettings {
+  id            String  @id @default(cuid())
+  userId        String  @unique
+  user          User    @relation(fields: [userId], references: [id])
+
+  aiProvider    String  @default("anthropic")
+  anthropicKey  String?
+  openaiKey     String?
+
+  graphLayout   String  @default("force-directed")
+  theme         String  @default("dark")
+}
+
+model Concept {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String   @db.Text
+  domain      String
+  tags        String[]
+  source      String?
+
+  embedding   Unsupported("vector(1536)")?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  connectionsFrom Connection[] @relation("FromConcept")
+  connectionsTo   Connection[] @relation("ToConcept")
+  importId        String?
+  import          Import?      @relation(fields: [importId], references: [id])
+
+  @@index([userId])
+  @@index([domain])
+}
+
+model Connection {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fromId      String
+  from        Concept  @relation("FromConcept", fields: [fromId], references: [id], onDelete: Cascade)
+  toId        String
+  to          Concept  @relation("ToConcept", fields: [toId], references: [id], onDelete: Cascade)
+
+  label       String
+  strength    Float    @default(0.5)
+  type        String   @default("related")
+
+  aiGenerated Boolean  @default(false)
+  accepted    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+
+  @@unique([fromId, toId])
+  @@index([userId])
+}
+
+model Import {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  source    String
+  filename  String?
+  url       String?
+  status    String    @default("pending")
+
+  concepts  Concept[]
+
+  createdAt DateTime  @default(now())
+}

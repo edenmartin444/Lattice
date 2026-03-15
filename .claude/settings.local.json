@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd:*)",
+      "Bash(where node:*)",
+      "Bash(export:*)",
+      "Read(//tmp/**)",
+      "Bash(cp -r .eslintrc.json .gitignore next.config.ts next-env.d.ts package.json package-lock.json postcss.config.mjs tsconfig.json src node_modules public \"C:/Users/axelf/OneDrive/Bureau/Projets/Latice/\")",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(which node:*)",
+      "Bash(sleep:*)"
+    ]
+  }
+}
